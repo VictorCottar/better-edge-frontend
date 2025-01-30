@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from '@/components/ui/button';
-import { Ellipsis, Trash2 } from 'lucide-react';
+import AddCliente from '@/app/components/addCliente';
+import { Ellipsis, Trash2, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
@@ -14,7 +16,6 @@ interface Cliente {
   status: boolean;
   ativos: { nome: string }[]; // Se os 'ativos' são um array de objetos com 'nome'
 }
-
 
 export default function ClientesTable() {
   const [data, setData] = useState<Cliente[]>([]);
@@ -121,6 +122,10 @@ export default function ClientesTable() {
     }
   };
 
+  const handleCreateCliente = (newCliente: Cliente) => {
+    setData((prevData) => [newCliente, ...prevData]);
+  };
+ 
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -141,83 +146,126 @@ export default function ClientesTable() {
   }, []);
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow className="font-bold">
-          <TableHead>Nome</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Ativos</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {data.map((item) => (
-          <TableRow key={item.id}>
-            <TableCell className="w-[25%]">{item.nome}</TableCell>
-            <TableCell className="w-[25%]">{item.email}</TableCell>
-            <TableCell className="w-[15%]">{item.status ? 'Ativo' : 'Inativo'}</TableCell>
-            <TableCell className="w-[30%]">
-              {Array.isArray(item.ativos) ? item.ativos.map((ativo) => ativo.nome).join(', ') : ''}
-            </TableCell>
-            <TableCell>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="icon" onClick={() => {
-                    setClienteId(item.id);
-                    setNome(item.nome);
-                    setEmail(item.email);
-                  }}>
-                    <Ellipsis />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="space-y-1 p-8">
-                  <DialogTitle>Editar cliente</DialogTitle>
-                  <Label htmlFor="nome">Nome</Label>
-                  <Input
-                    type="text"
-                    id="nome"
-                    placeholder="Nome"
-                    value={nome}
-                    onChange={(e) => setNome(e.target.value)}
-                  />
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    type="email"
-                    id="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                  <DialogClose asChild>
-                    <Button onClick={handleEditCliente}>Editar</Button>
-                  </DialogClose>
-                </DialogContent>
-              </Dialog>
-            </TableCell>
-            <TableCell>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="icon" onClick={() => setClienteId(item.id)}>
-                    <Trash2 />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="p-8">
-                  <DialogTitle>Excluir cliente</DialogTitle>
-                  <DialogDescription className="text-md">
-                    Você quer excluir permanentemente este cliente ou inativá-lo?
-                  </DialogDescription>
-                  <DialogClose asChild>
-                    <Button onClick={handleInativeCliente}>Inativar</Button>
-                  </DialogClose>
-                  <DialogClose asChild>
-                    <Button onClick={handleDeleteCliente}>Excluir permanentemente</Button>
-                  </DialogClose>
-                </DialogContent>
-              </Dialog>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <>
+      <div className='flex flex-col w-full gap-6'>
+        <div className='flex justify-end'>
+          <AddCliente onCreateCliente={handleCreateCliente}/>
+        </div>
+        <Table>
+          <TableHeader>
+            <TableRow className="font-bold">
+              <TableHead>Nome</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Ativos</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.map((item) => (
+              <TableRow key={item.id}>
+                <TableCell className="w-[25%]">{item.nome}</TableCell>
+                <TableCell className="w-[25%]">{item.email}</TableCell>
+                <TableCell className="w-[15%]">{item.status ? 'Ativo' : 'Inativo'}</TableCell>
+                <TableCell className="w-[30%]">
+                  {Array.isArray(item.ativos) ? item.ativos.map((ativo) => ativo.nome).join(', ') : ''}
+                </TableCell>
+                <TableCell>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="icon" onClick={() => setClienteId(item.id)}>
+                        <Plus />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="p-8">
+                      <DialogTitle>Adicionar um ativo</DialogTitle>
+                      <DialogDescription className="text-md">
+                        Escolha um ativo para adicionar
+                      </DialogDescription>
+                      <Select>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Selecione o ativo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>Ativos</SelectLabel>
+                            <SelectItem value="apple">Apple</SelectItem>
+                            <SelectItem value="banana">Banana</SelectItem>
+                            <SelectItem value="blueberry">Blueberry</SelectItem>
+                            <SelectItem value="grapes">Grapes</SelectItem>
+                            <SelectItem value="pineapple">Pineapple</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                      <DialogClose asChild>
+                        <Button>Adicionar</Button>
+                      </DialogClose>
+                    </DialogContent>
+                  </Dialog>
+                </TableCell>
+                <TableCell>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="icon" onClick={() => {
+                        setClienteId(item.id);
+                        setNome(item.nome);
+                        setEmail(item.email);
+                      }}>
+                        <Ellipsis />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="space-y-1 p-8">
+                      <DialogTitle>Editar cliente</DialogTitle>
+                      <DialogDescription>
+                        Altere os campos abaixo para editar o cliente.
+                      </DialogDescription>
+                      <Label htmlFor="nome">Nome</Label>
+                      <Input
+                        type="text"
+                        id="nome"
+                        placeholder="Nome"
+                        value={nome}
+                        onChange={(e) => setNome(e.target.value)}
+                      />
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        type="email"
+                        id="email"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                      <DialogClose asChild>
+                        <Button onClick={handleEditCliente}>Editar</Button>
+                      </DialogClose>
+                    </DialogContent>
+                  </Dialog>
+                </TableCell>
+                <TableCell>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="icon" onClick={() => setClienteId(item.id)}>
+                        <Trash2 />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="p-8">
+                      <DialogTitle>Excluir cliente</DialogTitle>
+                      <DialogDescription className="text-md">
+                        Você quer excluir permanentemente este cliente ou inativá-lo?
+                      </DialogDescription>
+                      <DialogClose asChild>
+                        <Button onClick={handleInativeCliente}>Inativar</Button>
+                      </DialogClose>
+                      <DialogClose asChild>
+                        <Button onClick={handleDeleteCliente}>Excluir permanentemente</Button>
+                      </DialogClose>
+                    </DialogContent>
+                  </Dialog>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </>
   );
 };
