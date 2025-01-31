@@ -14,7 +14,7 @@ interface Cliente {
   nome: string;
   email: string;
   status: boolean;
-  ativos: { nome: string }[];  // Se os 'ativos' são um array de objetos com 'nome'
+  ativos: { nome: string }[];
 }
 
 interface Ativo {
@@ -46,15 +46,11 @@ export default function ClientesTable() {
       const updatedCliente = await response.json();
 
       // Verifique se data é um array antes de mapear
-      setData((prevData) => {
-        if (Array.isArray(prevData)) {
-          return prevData.map((cliente) =>
-            cliente.id === updatedCliente.id ? updatedCliente : cliente
-          );
-        } else {
-          return []; // Retorne um array vazio se data não for um array
-        }
-      });
+      setData(prevData => prevData.map(cliente =>
+        cliente.id === updatedCliente.id
+          ? { ...updatedCliente, ativos: cliente.ativos }
+          : cliente
+      ));
 
       toast.success("Cliente editado com sucesso!");
       setNome('');
@@ -81,15 +77,11 @@ export default function ClientesTable() {
       const updatedCliente = await response.json();
 
       // Verifique se data é um array antes de mapear
-      setData((prevData) => {
-        if (Array.isArray(prevData)) {
-          return prevData.map((cliente) =>
-            cliente.id === updatedCliente.id ? updatedCliente : cliente
-          );
-        } else {
-          return []; // Retorne um array vazio se data não for um array
-        }
-      });
+      setData(prevData => prevData.map(cliente =>
+        cliente.id === updatedCliente.id
+          ? { ...cliente, ...updatedCliente }
+          : cliente
+      ));
 
       toast.success("Cliente inativado com sucesso!");
       setNome('');
