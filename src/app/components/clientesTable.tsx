@@ -14,7 +14,12 @@ interface Cliente {
   nome: string;
   email: string;
   status: boolean;
-  ativos: { nome: string }[]; // Se os 'ativos' são um array de objetos com 'nome'
+  ativos: { nome: string }[];  // Se os 'ativos' são um array de objetos com 'nome'
+}
+
+interface Ativo {
+  id: number;
+  nome: string;
 }
 
 export default function ClientesTable() {
@@ -22,6 +27,8 @@ export default function ClientesTable() {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [clienteId, setClienteId] = useState<number | null>(null);
+  const [ativosDisponiveis, setAtivosDisponiveis] = useState<Ativo[]>([]);
+  const [selectedAtivoId, setSelectedAtivoId] = useState<number | null>(null);
 
   const handleEditCliente = async () => {
     try {
@@ -125,7 +132,37 @@ export default function ClientesTable() {
   const handleCreateCliente = (newCliente: Cliente) => {
     setData((prevData) => [newCliente, ...prevData]);
   };
- 
+
+  const handleAddAtivo = async () => {
+    if (!clienteId || !selectedAtivoId) {
+      toast.error("Selecione um cliente e um ativo");
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:3000/clientes/${clienteId}/ativos`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ativoId: selectedAtivoId }),
+      });
+
+      if (!response.ok) {
+        toast.error("Erro ao adicionar ativo");
+        return;
+      }
+
+      // Atualiza a lista de clientes
+      const updatedClientes = await fetch('http://localhost:3000/clientes').then(res => res.json());
+      setData(updatedClientes);
+
+      toast.success("Ativo adicionado com sucesso!");
+      setSelectedAtivoId(null);
+    } catch (error) {
+      console.error('Erro:', error);
+      toast.error("Erro ao adicionar ativo");
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -145,11 +182,28 @@ export default function ClientesTable() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const fetchAtivos = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/ativos');
+        const result = await response.json();
+
+        if (Array.isArray(result)) {
+          setAtivosDisponiveis(result);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar ativos:', error);
+      }
+    };
+
+    fetchAtivos();
+  }, []);
+
   return (
     <>
       <div className='flex flex-col w-full gap-6'>
         <div className='flex justify-end'>
-          <AddCliente onCreateCliente={handleCreateCliente}/>
+          <AddCliente onCreateCliente={handleCreateCliente} />
         </div>
         <Table>
           <TableHeader>
@@ -181,23 +235,23 @@ export default function ClientesTable() {
                       <DialogDescription className="text-md">
                         Escolha um ativo para adicionar
                       </DialogDescription>
-                      <Select>
+                      <Select onValueChange={(value) => setSelectedAtivoId(Number(value))}>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Selecione o ativo" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>
                             <SelectLabel>Ativos</SelectLabel>
-                            <SelectItem value="apple">Apple</SelectItem>
-                            <SelectItem value="banana">Banana</SelectItem>
-                            <SelectItem value="blueberry">Blueberry</SelectItem>
-                            <SelectItem value="grapes">Grapes</SelectItem>
-                            <SelectItem value="pineapple">Pineapple</SelectItem>
+                            {ativosDisponiveis.map((ativo) => (
+                              <SelectItem key={ativo.id} value={ativo.id.toString()}>
+                                {ativo.nome}
+                              </SelectItem>
+                            ))}
                           </SelectGroup>
                         </SelectContent>
                       </Select>
                       <DialogClose asChild>
-                        <Button>Adicionar</Button>
+                        <Button onClick={handleAddAtivo}>Adicionar</Button>
                       </DialogClose>
                     </DialogContent>
                   </Dialog>

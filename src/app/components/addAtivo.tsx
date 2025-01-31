@@ -11,8 +11,11 @@ interface Ativo {
   clienteId?: number
 }
 
-export default function AddAtivo() {
-  const [data, setData] = useState<Ativo[]>([]);
+interface AddAtivoProps {
+  onCreateAtivo: (newAtivo: Ativo) => void;
+}
+
+export default function AddAtivo({ onCreateAtivo }: AddAtivoProps) {
   const [nome, setNome] = useState('');
   const [valorAtual, setValorAtual] = useState<number>();
 
@@ -36,7 +39,7 @@ export default function AddAtivo() {
 
       const newAtivo = await response.json();
 
-      setData((prevData) => [newAtivo, ...prevData]);
+      onCreateAtivo(newAtivo);
 
       toast.success("Ativo criado com sucesso!");
 

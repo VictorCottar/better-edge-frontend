@@ -18,7 +18,6 @@ interface AddClienteProps {
 }
 
 export default function AddCliente({ onCreateCliente }: AddClienteProps) {
-  const [data, setData] = useState<Cliente[]>([]);
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   

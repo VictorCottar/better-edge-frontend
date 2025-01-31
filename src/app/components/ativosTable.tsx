@@ -16,6 +16,10 @@ export default function AtivosTable() {
   const [data, setData] = useState<Ativos[]>([]);
   const [ativoId, setAtivoId] = useState<number | null>(null);
 
+  const handleCreateAtivo = (newAtivo: Ativos) => {
+    setData((prevData) => [newAtivo, ...prevData]);
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -33,7 +37,7 @@ export default function AtivosTable() {
     };
 
     fetchData();
-  }, [data]);
+  }, []);
 
   const handleDeleteAtivo = async () => {
     if (ativoId === null) {
@@ -67,7 +71,7 @@ export default function AtivosTable() {
   return (
     <div className='flex flex-col w-full gap-6'>
       <div className='flex justify-end'>
-        <AddAtivo />
+        <AddAtivo  onCreateAtivo={handleCreateAtivo}/>
       </div>
 
       <Table>
